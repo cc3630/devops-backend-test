@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-18.04
     env:
       ORG_NAME: 36node
-      REPO_NAME: backend-test
+      REPO_NAME: devops-backend-test
     steps:
       - uses: actions/checkout@v2
       - name: Login aliyun
