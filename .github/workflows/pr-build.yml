@@ -35,5 +35,5 @@ jobs:
         with:
           url: ${{ env.URL }}
           method: "POST"
-          customHeaders: '{"Accept":"application/vnd.github.v3+json","Authorization":"token ${{ secrets.GITHUB_TOKEN }}"}'
+          customHeaders: '{"Accept":"application/vnd.github.v3+json","Authorization":"token ${{ secrets.TOKEN }}"}'
           data: '{"event_type":"custom_event_type","client_payload":{"owner":"${{ env.ORG_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"pr-${{ github.event.pull_request.number}}"}}'
