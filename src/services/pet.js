@@ -6,8 +6,7 @@ import { toMongooseQuery } from "@36node/query-normalizr";
 import API from "../api/pet";
 import { Pet } from "../models";
 import { plain } from "../lib";
-import { loadPet, createDataRole, withRole } from "../middlewares";
-import { Role } from "../constants";
+import { loadPet, createDataRole } from "../middlewares";
 
 const debug = Debug("store:service:pet");
 
