@@ -17,7 +17,7 @@ jobs:
     env:
       EVENT_TYPE: main-deploy
       VERSION: latest
-      NS: adv-uat
+      NS: devops-test-uat
       ORG_NAME: 36node
       REPO_NAME: devops-backend-test
     steps:
