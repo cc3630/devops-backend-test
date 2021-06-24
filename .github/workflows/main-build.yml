@@ -1,16 +1,23 @@
 # This workflow will run tests using node and then publish a package to NPM Packages when a release is created
 # For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
 
-name: pr build image
+name: main build image
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
   build-test:
     runs-on: ubuntu-18.04
     env:
+      EVENT_TYPE: main-deploy
+      VERSION: latest
+      NS: adv-uat
       ORG_NAME: 36node
       REPO_NAME: devops-backend-test
     steps:
@@ -24,10 +31,9 @@ jobs:
       - name: Build and push image
         env:
           SERVER: ${{ secrets.ALI_REGISTRY }}
-          VERSION: ${{ github.event.pull_request.number }}
         run: |
-          docker build -t $SERVER/$ORG_NAME/$REPO_NAME:pr-$VERSION .
-          docker push $SERVER/$ORG_NAME/$REPO_NAME:pr-$VERSION
+          docker build -t $SERVER/$ORG_NAME/$REPO_NAME:$VERSION .
+          docker push $SERVER/$ORG_NAME/$REPO_NAME:$VERSION
       - name: Create repository dispatch event
         env:
           URL: https://api.github.com/repos/cc3630/cc-devops-test/dispatches
@@ -36,4 +42,4 @@ jobs:
           url: ${{ env.URL }}
           method: "POST"
           customHeaders: '{"Accept":"application/vnd.github.v3+json","Authorization":"token ${{ secrets.PR_TOKEN }}"}'
-          data: '{"event_type":"pr-deploy","client_payload":{"owner":"${{ env.ORG_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"pr-${{ github.event.pull_request.number}}"}}'
+          data: '{"event_type":"${{ env.EVENT_TYPE }}","client_payload":{"namespace":"${{ env.NS }}","owner":"${{ env.ORG_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"${{ env.VERSION }}"}}'
