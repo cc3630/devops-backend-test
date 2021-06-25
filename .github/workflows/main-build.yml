@@ -15,7 +15,11 @@ jobs:
       EVENT_TYPE: main-deploy
       VERSION: latest
       NS: devops-test-uat
-      ORG_NAME: 36node
+      IMAGE_ORG_NAME: 36node
+      IMAGE_REPO_NAME: devops-backend-test
+      DEVOPS_ORG_NAME: cc3630
+      DEVOPS_REPO_NAME: cc-devops-test
+      ORG_NAME: cc3630
       REPO_NAME: devops-backend-test
     steps:
       - uses: actions/checkout@v2
@@ -33,10 +37,10 @@ jobs:
           docker push $SERVER/$ORG_NAME/$REPO_NAME:$VERSION
       - name: Create repository dispatch event
         env:
-          URL: https://api.github.com/repos/cc3630/cc-devops-test/dispatches
+          URL: https://api.github.com/repos/${{ env.DEVOPS_ORG_NAME }}/${{ env.DEVOPS_REPO_NAME }}/dispatches
         uses: fjogeleit/http-request-action@master
         with:
           url: ${{ env.URL }}
           method: "POST"
           customHeaders: '{"Accept":"application/vnd.github.v3+json","Authorization":"token ${{ secrets.PR_TOKEN }}"}'
-          data: '{"event_type":"${{ env.EVENT_TYPE }}","client_payload":{"namespace":"${{ env.NS }}","owner":"${{ env.ORG_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"${{ env.VERSION }}"}}'
+          data: '{"event_type":"${{ env.EVENT_TYPE }}","client_payload":{"namespace":"${{ env.NS }}","owner":"${{ env.ORG_NAME }}","image_org":"${{ env.IMAGE_ORG_NAME }}","image_repo":"${{ env.IMAGE_REPO_NAME }}","org":"${{ env.REPO_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"${{ env.VERSION }}"}}'

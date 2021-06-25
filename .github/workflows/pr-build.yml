@@ -11,10 +11,18 @@ jobs:
   build-test:
     runs-on: ubuntu-18.04
     env:
+      # IMAGE_ORG_NAME、IMAGE_REPO_NAME 表示镜像仓库的组织名和仓库名
+      # DEVOPS_ORG_NAME、DEVOPS_REPO_NAME 表示Github仓库上Devops工程的组织名和仓库名
+      # ORG_NAME、REPO_NAME 表示Github仓库的组织名和仓库名
       EVENT_TYPE: pr-deploy
       NS_PREFIX: devops-test
-      ORG_NAME: 36node
+      IMAGE_ORG_NAME: 36node
+      IMAGE_REPO_NAME: devops-backend-test
+      DEVOPS_ORG_NAME: cc3630
+      DEVOPS_REPO_NAME: cc-devops-test
+      ORG_NAME: cc3630
       REPO_NAME: devops-backend-test
+      NAMESPACE: ${{ env.NS_PREFIX }}-${{ env.REPO_NAME }}-pr-${{ github.event.pull_request.number}}
     steps:
       - uses: actions/checkout@v2
       - name: Login aliyun
@@ -28,14 +36,17 @@ jobs:
           SERVER: ${{ secrets.ALI_REGISTRY }}
           VERSION: ${{ github.event.pull_request.number }}
         run: |
-          docker build -t $SERVER/$ORG_NAME/$REPO_NAME:pr-$VERSION .
-          docker push $SERVER/$ORG_NAME/$REPO_NAME:pr-$VERSION
+          docker build -t $SERVER/$IMAGE_ORG_NAME/$IMAGE_REPO_NAME:pr-$VERSION .
+          docker push $SERVER/$IMAGE_ORG_NAME/$IMAGE_REPO_NAME:pr-$VERSION
       - name: Create repository dispatch event
         env:
-          URL: https://api.github.com/repos/cc3630/cc-devops-test/dispatches
+          URL: https://api.github.com/repos/${{ env.DEVOPS_ORG_NAME }}/${{ env.DEVOPS_REPO_NAME }}/dispatches
+          DEPLOY_URL_PREFIX: https://api.${{ env.NAMESPACE }}
+          DEPLOY_URL_SUFFIX: /${{ env.REPO_NAME }}/v0
+          PR_OPEN: ${{ github.event.pull_request.type == 'opened' }}
         uses: fjogeleit/http-request-action@master
         with:
           url: ${{ env.URL }}
           method: "POST"
           customHeaders: '{"Accept":"application/vnd.github.v3+json","Authorization":"token ${{ secrets.PR_TOKEN }}"}'
-          data: '{"event_type":"${{ env.EVENT_TYPE }}","client_payload":{"namespace":"${{ env.NS_PREFIX }}-${{ env.REPO_NAME }}-pr-${{ github.event.pull_request.number}}","owner":"${{ env.ORG_NAME }}","repo":"${{ env.REPO_NAME }}","tag":"pr-${{ github.event.pull_request.number}}"}}'
+          data: '{"event_type":"${{ env.EVENT_TYPE }}","client_payload":{"namespace":"${{ env.NAMESPACE }}","deploy_url_prefix":"${{ env.DEPLOY_URL_PREFIX }}","deploy_url_suffix":"${{ env.DEPLOY_URL_SUFFIX }}""image_org":"${{ env.IMAGE_ORG_NAME }}","image_repo":"${{ env.IMAGE_REPO_NAME }}","org":"${{ env.REPO_NAME }}","repo":"${{ env.REPO_NAME }}","number":"${{ github.event.pull_request.number }}","tag":"pr-${{ github.event.pull_request.number }}","open":${{ env.PR_OPEN }}}}'
