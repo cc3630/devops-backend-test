@@ -1,0 +1,36 @@
+# This workflow will run tests using node and then publish a package to NPM Packages when a release is created
+# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+
+name: Pr Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-18.04
+    env:
+      # IMAGE_ORG_NAME、IMAGE_REPO_NAME 表示镜像仓库的组织名和仓库名
+      # DEVOPS_ORG_NAME、DEVOPS_REPO_NAME 表示Github仓库上Devops工程的组织名和仓库名
+      # ORG_NAME、REPO_NAME 表示Github仓库的组织名和仓库名
+      EVENT_TYPE: pr-deploy
+      NS_PREFIX: devops-test
+      IMAGE_ORG_NAME: 36node
+      IMAGE_REPO_NAME: devops-backend-test
+      DEVOPS_ORG_NAME: cc3630
+      DEVOPS_REPO_NAME: cc-devops-test
+      ORG_NAME: cc3630
+      REPO_NAME: devops-backend-test
+    steps:
+      - uses: actions/checkout@v2
+      - name: test 1
+        env: 
+          TEST_A: ${{ toJSON(github.event.pull_request) }}
+        run: |
+          echo ${{ env.TEST_A }}
+      - name: test 2
+        env:
+          PR_OPEN: ${{ github.event.pull_request.type == 'opened' }}
+        run: |
+          echo ${{ env.PR_OPEN }}
